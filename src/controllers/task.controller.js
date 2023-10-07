@@ -1,86 +1,39 @@
-import {client} from "../db.js";
+import Task from "../models/tasks.model.js";
 
-export const viewTasks = async (req, res) => {
-    try {
-      await client.connect();
-      console.log("Conexión exitosa a MongoDB");
-      const db = client.db("Proyecto_ada");
-      const collection = db.collection("tasks");
-      const documentos = await collection.find().toArray();
-      res.send(documentos);
-    } catch (error) {
-      next(error); // Pasa el error al middleware de manejo de errores
-    } finally {
-      client.close();
-    }
-  };
-
-export const addTask = (req,res) =>{async (req, res, next) => {
-        const newTask = {
-          task: req.body.task, // Utiliza el cuerpo de la solicitud para obtener los datos
-        };
-        try {
-          await client.connect();
-          const db = client.db("Proyecto_ada");
-          const collection = db.collection("tasks");
-          const documento = await collection.insertOne(newTask);
-          res.status(201).json(documento); // Devuelve el documento insertado
-        } catch (error) {
-          next(error); // Pasa el error al middleware de manejo de errores
-        } finally {
-          client.close();
-        }
-      }
+export const getTasks = async (req, res) => {
+  const tasks = await Task.find({
+    user: req.user.id,
+  }).populate('user');
+  res.json(tasks);
 };
 
-export const deleteTask = (req,res) =>{async (req, res, next) => {
-    try {
-      await client.connect();
-      console.log("Conexión exitosa a MongoDB");
-      const db = client.db("Proyecto_ada");
-      const collection = db.collection("tasks");
-      
-      const taskId = req.params.id;
-      const documento = { _id: new ObjectId(taskId) }; // Construye un objeto de consulta
-  
-      const result = await collection.deleteOne(documento);
-  
-      if (result.deletedCount === 1) {
-        res.send("Documento eliminado con éxito");
-      } else {
-        res.status(404).send("Documento no encontrado");
-      }
-    } catch (error) {
-      next(error); // Pasa el error al middleware de manejo de errores
-    } finally {
-      client.close();
-    }
-  }};
+export const createTask = async (req, res) => {
+  const { task, description, completed, date } = req.body;
+  const newTask = new Task({
+    task,
+    description,
+    completed: false,
+    date,
+    user: req.user.id,
+  });
+  const savedTask = await newTask.save();
+  res.json(savedTask);
+};
 
-export const editTask = (req,res) =>{async (req, res, next) => {
-  try {
-    await client.connect();
-    console.log("Conexión exitosa a MongoDB");
-    const db = client.db("Proyecto_ada");
-    const collection = db.collection("tasks");
+export const getTask = async (req, res) => {
+  const task = await Task.findById(req.params.id).populate('user');
+  if (!task) res.status(404).json({ message: "Task not found" });
+  res.json(task);
+};
 
-    const taskId = req.params.id;
-    const updateData = req.body; // Los campos a actualizar deben estar en el cuerpo de la solicitud
+export const deleteTask = async (req, res) => {
+  const task = await Task.findByIdAndDelete(req.params.id);
+  if (!task) res.status(404).json({ message: "Task not found" });
+  return res.sendStatus(204);
+};
 
-    const result = await collection.updateOne(
-      { _id: new ObjectId(taskId) }, // Utiliza el ID de la tarea como filtro
-      { $set: updateData } // Utiliza $set para actualizar los campos especificados en updateData
-    );
-
-    if (result.matchedCount === 1) {
-      res.send("Tarea actualizada con éxito");
-    } else {
-      res.status(404).send("Tarea no encontrada");
-    }
-  } catch (error) {
-    next(error); // Pasa el error al middleware de manejo de errores
-  } finally {
-    client.close();
-  }
-}};
-
+export const editTask = async (req, res) => {
+  const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  if (!task) res.status(404).json({ message: "Task not found" });
+  res.json(task);
+};

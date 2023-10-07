@@ -1,12 +1,15 @@
 import { Router } from "express";
-import { viewTasks, addTask, deleteTask, editTask } from "../controllers/task.controller.js";
+import { authRequired } from "../middlewares/validateToken.js";
+import { getTasks, getTask, createTask, deleteTask, editTask } from "../controllers/task.controller.js";
+import { validateSchema } from "../middlewares/validator.middleware.js";
+import { taskSchema } from "../schemas/task.schema.js";
 
+const tasksRouter = Router();
 
-const router = Router();
+tasksRouter.get("/tasks", authRequired, getTasks);
+tasksRouter.get("/tasks/:id", authRequired, getTask);
+tasksRouter.post("/tasks/add", authRequired, validateSchema(taskSchema), createTask);
+tasksRouter.delete("/tasks/delete/:id", authRequired, deleteTask);
+tasksRouter.patch("/tasks/edit/:id", authRequired, editTask);
 
-router.get("/", viewTasks);
-router.post("/add", addTask);
-router.delete("/delete", deleteTask);
-router.patch("/edit", editTask);
-
-export default router;
+export default tasksRouter;

@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }) => {
   const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(true);
 
+
   const signUp = async (user) => {
     try {
       const response = await registerRequest(user);
@@ -42,6 +43,16 @@ export const AuthProvider = ({ children }) => {
         return setErrors(error.res.data);
       }
       setErrors([error.res.data.message]);
+    }
+  };
+
+  const logout = async (user) => {
+    try {
+      Cookies.remove("token");
+      setIsAuthenticated(false);
+      setUser(null);
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -86,7 +97,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ signUp, login, user, loading, isAuthenticated, errors }}
+      value={{ signUp, login, logout, user, loading, isAuthenticated, errors }}
     >
       {children}
     </AuthContext.Provider>

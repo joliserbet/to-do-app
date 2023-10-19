@@ -8,7 +8,7 @@ const tasksRouter = Router();
 
 tasksRouter.get("/tasks", authRequired, getTasks);
 tasksRouter.get("/tasks/:id", authRequired, getTask);
-tasksRouter.post("/tasks/add", authRequired, validateSchema(taskSchema), createTask);
+tasksRouter.post("/tasks/new", authRequired, validateSchema(taskSchema), createTask);
 tasksRouter.delete("/tasks/delete/:id", authRequired, deleteTask);
 tasksRouter.patch("/tasks/edit/:id", authRequired, editTask);
 

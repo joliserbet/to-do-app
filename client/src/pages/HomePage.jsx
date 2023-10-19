@@ -1,7 +1,7 @@
 
 function HomePage() {
   return (
-    <div>HomePage</div>
+    <div>Welcome to the most epic Task Manager App</div>
   )
 }
 
